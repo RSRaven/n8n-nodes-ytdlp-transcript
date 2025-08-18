@@ -1,0 +1,28 @@
+{
+  "name": "n8n-nodes-ytdlp-transcript",
+  "version": "0.1.0",
+  "description": "n8n node for extracting video transcripts using yt-dlp",
+  "keywords": ["n8n", "n8n-node", "youtube", "transcript", "yt-dlp"],
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && cp -r icons dist/",
+    "dev": "tsc --watch"
+  },
+  "files": ["dist"],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [],
+    "nodes": [
+      "dist/nodes/YtDlpTranscript/YtDlpTranscript.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^18.16.16",
+    "typescript": "^5.1.3",
+    "n8n-workflow": "^1.0.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
