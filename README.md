@@ -13,16 +13,31 @@ An n8n node for extracting video transcripts using yt-dlp with support for cooki
 
 ## Installation
 
-### Option 1: Local Development
-1. Clone this repository
-2. Run `npm run build`
-3. Install in n8n: `npm install /path/to/n8n-nodes-ytdlp-transcript`
-
-### Option 2: n8n Community Nodes
+### Option 1: n8n Community Package (Recommended)
+Install directly from npm:
 ```bash
-# Install in n8n custom nodes directory
+npm install @rsraven/n8n-nodes-ytdlp-transcript
+```
+
+### Option 2: n8n Self-hosted Server
+1. Open n8n
+2. Go to **Settings** → **Community Nodes**
+3. Install: `@rsraven/n8n-nodes-ytdlp-transcript`
+
+### Option 3: Docker
+Add to your environment variables or docker-compose:
+```bash
+N8N_COMMUNITY_PACKAGES="@rsraven/n8n-nodes-ytdlp-transcript"
+```
+
+### Option 4: Manual Installation
+```bash
+# For global n8n installation
+npm install -g @rsraven/n8n-nodes-ytdlp-transcript
+
+# For local development
 cd ~/.n8n/nodes
-npm install n8n-nodes-ytdlp-transcript
+npm install @rsraven/n8n-nodes-ytdlp-transcript
 ```
 
 ## Prerequisites

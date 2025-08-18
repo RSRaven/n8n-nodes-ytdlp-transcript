@@ -1,0 +1,28 @@
+# Source files
+nodes/
+icons/
+*.ts
+tsconfig.json
+
+# Development files
+.claude/
+.vscode/
+.idea/
+*.log
+npm-debug.log*
+
+# Git files
+.git/
+.gitignore
+
+# Documentation (keep README.md)
+docs/
+
+# Tests
+test/
+tests/
+*.test.js
+*.test.ts
+
+# Build artifacts (keep only what's needed)
+!dist/
