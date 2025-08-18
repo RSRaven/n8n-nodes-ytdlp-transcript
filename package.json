@@ -1,12 +1,12 @@
 {
   "name": "n8n-nodes-ytdlp-transcript",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "n8n node for extracting video transcripts using yt-dlp",
   "keywords": ["n8n", "n8n-node", "youtube", "transcript", "yt-dlp"],
   "license": "MIT",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && cp -r icons dist/",
+    "build": "tsc && cp nodes/YtDlpTranscript/ytdlp.svg dist/nodes/YtDlpTranscript/",
     "dev": "tsc --watch"
   },
   "files": ["dist"],
