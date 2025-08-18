@@ -230,5 +230,5 @@ MIT License - see LICENSE file for details.
 
 ## Support
 
-- Report issues: [GitHub Issues](https://github.com/your-repo/n8n-nodes-ytdlp-transcript/issues)
+- Report issues: [GitHub Issues](https://github.com/RSRaven/n8n-nodes-ytdlp-transcript/issues)
 - n8n Community: [n8n Community Forum](https://community.n8n.io)
