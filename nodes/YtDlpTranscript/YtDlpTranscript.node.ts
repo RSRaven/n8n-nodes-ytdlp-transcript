@@ -24,7 +24,7 @@ export class YtDlpTranscript implements INodeType {
 		icon: 'file:ytdlp.svg',
 		group: ['transform'],
 		version: 1,
-		subtitle: '={{$parameter["operation"] + ": " + $parameter["videoUrl"]}}',
+		subtitle: '={{$parameter["videoUrl"]}}',
 		description: 'Extract video transcriptions using yt-dlp with support for cookies and language selection',
 		defaults: {
 			name: 'YT-DLP Transcript',
@@ -33,25 +33,6 @@ export class YtDlpTranscript implements INodeType {
 		outputs: [NodeConnectionType.Main],
 		credentials: [],
 		properties: [
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				default: 'extractTranscript',
-				options: [
-					{
-						name: 'Extract Transcript',
-						value: 'extractTranscript',
-						description: 'Extract transcript from a video URL',
-					},
-					{
-						name: 'Extract with Metadata',
-						value: 'extractWithMetadata',
-						description: 'Extract transcript with additional video metadata',
-					},
-				],
-			},
 			{
 				displayName: 'Video URL',
 				name: 'videoUrl',
@@ -66,8 +47,37 @@ export class YtDlpTranscript implements INodeType {
 				name: 'language',
 				type: 'string',
 				default: 'en',
-				placeholder: 'en, es, fr, de, etc.',
-				description: 'Language code for the transcript (e.g., en for English, es for Spanish)',
+				placeholder: 'en,es or en,fr,de',
+				description: 'Language code(s) for the transcript. Single language (en) or comma-separated priority list (en,es,fr). First available language will be used.',
+			},
+			{
+				displayName: 'Output Format',
+				name: 'outputFormat',
+				type: 'options',
+				default: 'cleanText',
+				options: [
+					{
+						name: 'Clean Text',
+						value: 'cleanText',
+						description: 'Plain text without timestamps',
+					},
+					{
+						name: 'Text with Timestamps',
+						value: 'textWithTimestamps',
+						description: 'Text with timestamp markers',
+					},
+					{
+						name: 'Structured JSON',
+						value: 'structuredJson',
+						description: 'JSON with segments, timestamps, and text',
+					},
+					{
+						name: 'Markdown',
+						value: 'markdown',
+						description: 'Markdown formatted with timestamps as headers',
+					},
+				],
+				description: 'Format of the output transcript',
 			},
 			{
 				displayName: 'Additional Options',
@@ -91,52 +101,61 @@ export class YtDlpTranscript implements INodeType {
 						description: 'Whether to use cookies from incoming binary data',
 					},
 					{
+						displayName: 'Use Browser Cookies',
+						name: 'useBrowserCookies',
+						type: 'boolean',
+						default: false,
+						description: 'Whether to use cookies from installed browser',
+					},
+					{
+						displayName: 'Browser Name',
+						name: 'browserName',
+						type: 'options',
+						default: 'chrome',
+						displayOptions: {
+							show: {
+								'useBrowserCookies': [true],
+							},
+						},
+						options: [
+							{
+								name: 'Chrome',
+								value: 'chrome',
+							},
+							{
+								name: 'Firefox',
+								value: 'firefox',
+							},
+							{
+								name: 'Safari',
+								value: 'safari',
+							},
+							{
+								name: 'Edge',
+								value: 'edge',
+							},
+							{
+								name: 'Opera',
+								value: 'opera',
+							},
+							{
+								name: 'Brave',
+								value: 'brave',
+							},
+						],
+						description: 'Browser to extract cookies from',
+					},
+					{
 						displayName: 'Binary Property Name',
 						name: 'binaryPropertyName',
 						type: 'string',
 						default: 'cookies',
 						displayOptions: {
 							show: {
-								useBinaryCookies: [true],
+								'useBinaryCookies': [true],
 							},
 						},
 						description: 'Name of the binary property containing cookies',
-					},
-					{
-						displayName: 'Auto-Generated Subtitles',
-						name: 'autoSubtitles',
-						type: 'boolean',
-						default: false,
-						description: 'Whether to fall back to auto-generated subtitles if manual ones are not available',
-					},
-					{
-						displayName: 'Output Format',
-						name: 'outputFormat',
-						type: 'options',
-						default: 'cleanText',
-						options: [
-							{
-								name: 'Clean Text',
-								value: 'cleanText',
-								description: 'Plain text without timestamps',
-							},
-							{
-								name: 'Text with Timestamps',
-								value: 'textWithTimestamps',
-								description: 'Text with timestamp markers',
-							},
-							{
-								name: 'Structured JSON',
-								value: 'structuredJson',
-								description: 'JSON with segments, timestamps, and text',
-							},
-							{
-								name: 'Markdown',
-								value: 'markdown',
-								description: 'Markdown formatted with timestamps as headers',
-							},
-						],
-						description: 'Format of the output transcript',
 					},
 					{
 						displayName: 'Remove Duplicate Lines',
@@ -178,9 +197,9 @@ export class YtDlpTranscript implements INodeType {
 
 		for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
 			try {
-				const operation = this.getNodeParameter('operation', itemIndex) as string;
 				const videoUrl = this.getNodeParameter('videoUrl', itemIndex) as string;
 				const language = this.getNodeParameter('language', itemIndex) as string;
+				const outputFormat = this.getNodeParameter('outputFormat', itemIndex) as string;
 				const additionalOptions = this.getNodeParameter('additionalOptions', itemIndex) as any;
 
 				// Validate URL
@@ -193,6 +212,8 @@ export class YtDlpTranscript implements INodeType {
 				fs.mkdirSync(tempDir, { recursive: true });
 
 				let cookiesPath: string | undefined;
+				let useBrowserCookies = false;
+				let browserName = '';
 
 				// Handle cookies
 				if (additionalOptions.useBinaryCookies) {
@@ -204,6 +225,9 @@ export class YtDlpTranscript implements INodeType {
 						const cookiesContent = Buffer.from(binaryData.data, 'base64').toString('utf-8');
 						await fsWriteFile(cookiesPath, cookiesContent);
 					}
+				} else if (additionalOptions.useBrowserCookies) {
+					useBrowserCookies = true;
+					browserName = additionalOptions.browserName || 'chrome';
 				} else if (additionalOptions.cookiesFile) {
 					cookiesPath = additionalOptions.cookiesFile;
 				}
@@ -218,11 +242,10 @@ export class YtDlpTranscript implements INodeType {
 				command += ` --output "${outputPath}"`;
 				command += ` --sub-format vtt/srt/best`;
 
-				if (additionalOptions.autoSubtitles) {
-					command += ` --write-auto-subs`;
-				}
 
-				if (cookiesPath) {
+				if (useBrowserCookies) {
+					command += ` --cookies-from-browser "${browserName}"`;
+				} else if (cookiesPath) {
 					command += ` --cookies "${cookiesPath}"`;
 				}
 
@@ -240,9 +263,15 @@ export class YtDlpTranscript implements INodeType {
 
 				// Find the downloaded subtitle file
 				const files = fs.readdirSync(tempDir);
-				const subtitleFile = files.find(f => 
-					f.includes('.vtt') || f.includes('.srt') || f.includes(language)
-				);
+				const languageCodes = language.split(',').map(lang => lang.trim());
+				
+				const subtitleFile = files.find(f => {
+					if (f.includes('.vtt') || f.includes('.srt')) {
+						// Check if any of the requested languages are in the filename
+						return languageCodes.some(lang => f.includes(lang));
+					}
+					return false;
+				}) || files.find(f => f.includes('.vtt') || f.includes('.srt')); // Fallback to any subtitle file
 
 				if (!subtitleFile) {
 					throw new NodeOperationError(
@@ -258,15 +287,12 @@ export class YtDlpTranscript implements INodeType {
 				// Parse VTT/SRT content
 				const transcript = parseSubtitles(
 					subtitleContent,
-					additionalOptions.outputFormat || 'cleanText',
+					outputFormat || 'cleanText',
 					additionalOptions.removeDuplicates !== false
 				);
 
-				// Get metadata if requested
-				let metadata: any = {};
-				if (operation === 'extractWithMetadata') {
-					metadata = await getVideoMetadata(videoUrl, cookiesPath);
-				}
+				// Get metadata
+				const metadata = await getVideoMetadata(videoUrl, cookiesPath, useBrowserCookies, browserName);
 
 				// Clean up temporary files
 				try {
@@ -281,13 +307,13 @@ export class YtDlpTranscript implements INodeType {
 						videoUrl,
 						language,
 						transcript: typeof transcript === 'string' ? transcript : JSON.stringify(transcript, null, 2),
-						format: additionalOptions.outputFormat || 'cleanText',
-						...(operation === 'extractWithMetadata' && { metadata }),
+						format: outputFormat || 'cleanText',
+						metadata,
 					},
 				};
 
 				// If structured output, add the parsed transcript as well
-				if (additionalOptions.outputFormat === 'structuredJson' && typeof transcript === 'object') {
+				if (outputFormat === 'structuredJson' && typeof transcript === 'object') {
 					outputItem.json.transcriptData = transcript;
 				}
 
@@ -389,11 +415,13 @@ function cleanSubtitleText(text: string): string {
 }
 
 // Helper function to get video metadata
-async function getVideoMetadata(videoUrl: string, cookiesPath?: string): Promise<any> {
+async function getVideoMetadata(videoUrl: string, cookiesPath?: string, useBrowserCookies?: boolean, browserName?: string): Promise<any> {
 	try {
 		let command = `yt-dlp "${videoUrl}" --dump-json --no-warnings`;
 		
-		if (cookiesPath) {
+		if (useBrowserCookies && browserName) {
+			command += ` --cookies-from-browser "${browserName}"`;
+		} else if (cookiesPath) {
 			command += ` --cookies "${cookiesPath}"`;
 		}
 
