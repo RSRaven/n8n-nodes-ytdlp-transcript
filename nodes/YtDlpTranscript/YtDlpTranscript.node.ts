@@ -86,6 +86,12 @@ export class YtDlpTranscript implements INodeType {
 				placeholder: 'Add Option',
 				default: {},
 				options: [
+					{   displayName: 'Omit language',
+					    name: 'omitLang',
+					    type: 'boolean',
+					    default: false,
+					    description: 'Whether to omit the language for videos that do not specify',
+					},
 					{
 						displayName: 'Cookies File',
 						name: 'cookiesFile',
@@ -237,7 +243,11 @@ export class YtDlpTranscript implements INodeType {
 				let command = `yt-dlp "${videoUrl}"`;
 				
 				// Add subtitle extraction flags
-				command += ` --write-subs --write-auto-subs --sub-lang ${language}`;
+				if (!additionalOptions.omitLang) {
+					command += `--sub-lang ${language}`;
+				}
+				
+				command += ` --write-subs --write-auto-subs`;
 				command += ` --skip-download`; // Don't download the video
 				command += ` --output "${outputPath}"`;
 				command += ` --sub-format vtt/srt/best`;
