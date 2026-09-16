@@ -244,7 +244,7 @@ export class YtDlpTranscript implements INodeType {
 				
 				// Add subtitle extraction flags
 				if (!additionalOptions.omitLang) {
-					command += `--sub-lang ${language}`;
+					command += ` --sub-lang ${language}`;
 				}
 				
 				command += ` --write-subs --write-auto-subs`;
