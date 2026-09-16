@@ -24,6 +24,8 @@ npm install @rsraven/n8n-nodes-ytdlp-transcript
 2. Go to **Settings** → **Community Nodes**
 3. Install: `@rsraven/n8n-nodes-ytdlp-transcript`
 
+> Type the full name, including `@rsraven/`. The name without the scope does not exist on npm, and n8n shows "Failed to check package version existence".
+
 ### Option 3: Docker
 Add to your environment variables or docker-compose:
 ```bash

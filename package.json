@@ -1,8 +1,17 @@
 {
   "name": "@rsraven/n8n-nodes-ytdlp-transcript",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "n8n node for extracting video transcripts using yt-dlp with browser cookie support",
-  "keywords": ["n8n-community-node", "n8n", "n8n-node", "youtube", "transcript", "yt-dlp", "video", "subtitles"],
+  "keywords": [
+    "n8n-community-node",
+    "n8n",
+    "n8n-node",
+    "youtube",
+    "transcript",
+    "yt-dlp",
+    "video",
+    "subtitles"
+  ],
   "license": "MIT",
   "homepage": "https://github.com/RSRaven/n8n-nodes-ytdlp-transcript#readme",
   "repository": {
@@ -27,7 +36,9 @@
     "build": "tsc && cp nodes/YtDlpTranscript/ytdlp.svg dist/nodes/YtDlpTranscript/",
     "dev": "tsc --watch"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [],
@@ -42,5 +53,10 @@
   },
   "peerDependencies": {
     "n8n-workflow": "*"
+  },
+  "peerDependenciesMeta": {
+    "n8n-workflow": {
+      "optional": true
+    }
   }
 }
