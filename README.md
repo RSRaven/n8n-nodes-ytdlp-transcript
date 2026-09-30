@@ -233,6 +233,10 @@ Enable "Continue on Fail" to handle errors gracefully in your workflow.
 - Test URL manually: `yt-dlp --list-subs "VIDEO_URL"`
 - Verify cookies: `yt-dlp --cookies-from-browser chrome --list-subs "VIDEO_URL"`
 
+## Changelog
+
+- 0.1.3: security fix, yt-dlp is run without a shell
+
 ## Contributing
 
 1. Fork the repository

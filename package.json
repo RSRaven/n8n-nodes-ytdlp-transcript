@@ -1,6 +1,6 @@
 {
   "name": "@rsraven/n8n-nodes-ytdlp-transcript",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "n8n node for extracting video transcripts using yt-dlp with browser cookie support",
   "keywords": [
     "n8n-community-node",
@@ -34,7 +34,8 @@
   },
   "scripts": {
     "build": "tsc && cp nodes/YtDlpTranscript/ytdlp.svg dist/nodes/YtDlpTranscript/",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "test": "node --test"
   },
   "files": [
     "dist"
@@ -48,8 +49,8 @@
   },
   "devDependencies": {
     "@types/node": "^18.16.16",
-    "typescript": "^5.1.3",
-    "n8n-workflow": "^1.0.0"
+    "n8n-workflow": "^1.0.0",
+    "typescript": "^5.1.3"
   },
   "peerDependencies": {
     "n8n-workflow": "*"
