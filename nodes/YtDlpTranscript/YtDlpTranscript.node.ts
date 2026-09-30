@@ -6,13 +6,13 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 const fsReadFile = promisify(fs.readFile);
 const fsWriteFile = promisify(fs.writeFile);
 
@@ -237,38 +237,40 @@ export class YtDlpTranscript implements INodeType {
 					cookiesPath = additionalOptions.cookiesFile;
 				}
 
-				// Build yt-dlp command
+				// Build yt-dlp arguments (passed as an array, no shell involved)
 				const outputPath = path.join(tempDir, 'subtitle');
-				let command = `yt-dlp "${videoUrl}"`;
+				const args: string[] = [];
 				
 				// Add subtitle extraction flags
 				if (!additionalOptions.omitLang) {
-					command += ` --sub-lang ${language}`;
+					args.push('--sub-lang', language);
 				}
 				
-				command += ` --write-subs --write-auto-subs`;
-				command += ` --skip-download`; // Don't download the video
-				command += ` --output "${outputPath}"`;
-				command += ` --sub-format vtt/srt/best`;
+				args.push('--write-subs', '--write-auto-subs');
+				args.push('--skip-download'); // Don't download the video
+				args.push('--output', outputPath);
+				args.push('--sub-format', 'vtt/srt/best');
 
 
 				if (useBrowserCookies) {
-					command += ` --cookies-from-browser "${browserName}"`;
+					args.push('--cookies-from-browser', browserName);
 				} else if (cookiesPath) {
-					command += ` --cookies "${cookiesPath}"`;
+					args.push('--cookies', cookiesPath);
 				}
 
 				if (additionalOptions.proxy) {
-					command += ` --proxy "${additionalOptions.proxy}"`;
+					args.push('--proxy', additionalOptions.proxy);
 				}
 
 				if (additionalOptions.userAgent) {
-					command += ` --user-agent "${additionalOptions.userAgent}"`;
+					args.push('--user-agent', additionalOptions.userAgent);
 				}
 
+				// '--' ends the options, so the URL is never read as an option
+				args.push('--', videoUrl);
+
 				// Execute yt-dlp
-				console.log('Executing command:', command);
-				const { stdout, stderr } = await execAsync(command);
+				await execFileAsync('yt-dlp', args, { shell: false });
 
 				// Find the downloaded subtitle file
 				const files = fs.readdirSync(tempDir);
@@ -426,15 +428,18 @@ function cleanSubtitleText(text: string): string {
 // Helper function to get video metadata
 async function getVideoMetadata(videoUrl: string, cookiesPath?: string, useBrowserCookies?: boolean, browserName?: string): Promise<any> {
 	try {
-		let command = `yt-dlp "${videoUrl}" --dump-json --no-warnings`;
+		const args: string[] = ['--dump-json', '--no-warnings'];
 		
 		if (useBrowserCookies && browserName) {
-			command += ` --cookies-from-browser "${browserName}"`;
+			args.push('--cookies-from-browser', browserName);
 		} else if (cookiesPath) {
-			command += ` --cookies "${cookiesPath}"`;
+			args.push('--cookies', cookiesPath);
 		}
 
-		const { stdout } = await execAsync(command);
+		args.push('--', videoUrl);
+
+		// --dump-json output can be larger than the 1 MB default buffer
+		const { stdout } = await execFileAsync('yt-dlp', args, { shell: false, maxBuffer: 64 * 1024 * 1024 });
 		const metadata = JSON.parse(stdout);
 
 		// Return only relevant metadata
