@@ -4,7 +4,6 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	NodeOperationError,
-	NodeConnectionType,
 } from 'n8n-workflow';
 
 import { exec } from 'child_process';
@@ -29,8 +28,8 @@ export class YtDlpTranscript implements INodeType {
 		defaults: {
 			name: 'YT-DLP Transcript',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [],
 		properties: [
 			{
