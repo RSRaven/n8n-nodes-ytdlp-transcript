@@ -250,7 +250,7 @@ export class YtDlpTranscript implements INodeType {
 				args.push('--skip-download'); // Don't download the video
 				args.push('--output', outputPath);
 				args.push('--sub-format', 'vtt/srt/best');
-				args.push('--sleep-subtitles 75'); //Because of the HTTP Error 429: Too Many Requests
+args.push('--sleep-subtitles', '75'); // Because of HTTP Error 429: Too Many Requests
 
 
 				if (useBrowserCookies) {
